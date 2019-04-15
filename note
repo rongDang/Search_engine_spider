@@ -1,0 +1,112 @@
+1.Spider Middleware有以下几个函数被管理:
+    - process_spider_input 接收一个response对象并处理,
+
+    位置是Downloader-->process_spider_input-->Spiders(Downloader和Spiders是scrapy官方结构图中的组件)
+
+    - process_spider_exception spider出现的异常时被调用
+
+    - process_spider_output 当Spider处理response返回result时,该方法被调用
+
+    - process_start_requests 当spider发出请求时,被调用
+
+　　  位置是Spiders-->process_start_requests-->Scrapy Engine(Scrapy Engine是scrapy官方结构图中的组件)
+
+2.Downloader Middleware有以下几个函数被管理
+　　 - process_request     request通过下载中间件时，该方法被调用(可以在该处设置UA，proxy)
+
+　　 - process_response   下载结果经过中间件时被此方法处理
+
+　　 - process_exception  下载过程中出现异常时被调用
+
+      编写中间件时,需要思考要实现的功能最适合在那个过程处理,就编写哪个方法.
+
+      中间件可以用来处理请求,处理结果或者结合信号协调一些方法的使用等.也可以在原有的爬虫上添加适应项目的其他功能,
+      这一点在扩展中编写也可以达到目的,实际上扩展更加去耦合化,推荐使用扩展.
+
+
+download middleware
+    数字越小，越靠近引擎，数字越大越靠近下载器，所以数字越小的，processrequest()优先处理；
+    数字越大的，process_response()优先处理；若需要关闭某个中间件直接设为None即可
+
+同时存在 middleware和pipeline时，middleware的值要小于pipeline的值？
+
+
+
+
+关于python中 @classmethod @staticmethod区别
+    简述：
+    普通的类方法：需要通过 self 参数隐式的传递当前类对象的实例。
+    @classmethod修饰的方法：需要通过 cls 参数传递当前类对象。
+    @staticmethod修饰的方法定义与普通函数是一样的。
+
+    普通方法需要实例化类才能调用， 使用@classmethod装饰的方法，不需要实例化类就可以调用，实力化类也可以调用
+    @staticmethod装饰的方法，定义和普通函数一样，不需要实例化即可调用，实例化类也一样可以调用
+
+
+Python中的接口, 抽象类, 抽象函数
+    概念：抽象方法是父类的一个方法，父类没有实现这个方法，父类是不可以实例化的，子类继承父类，子类必须实现父类定义的抽象方法
+    子类才能被实例化， python中的abc提供了@abstractmethod装饰器实现抽象方法的定义
+
+    Python中的接口是个弱概念, 从Java中的概念延伸而来, Python中通过抽象类和抽象方法来实现一个接口,
+    例如Python3中, class 类继承的 abc.ABC 即为抽象类, @abstractmethod 装饰器使其装饰的函数成为抽象函数
+
+    一般情况下, Python多在单继承的情况下使用抽象类
+
+
+思路：在items里面定义抽象类，在具体的item中继承items中的抽象类，实现抽象类中的方法。
+    然后在pipeline中处理item时，调用item实现的抽象类中的方法，完成对数据的处理，pipeline中对item的操作
+
+
+
+            settings中的常见参数
+CONCURRENT_REQUESTS = 16                 # 全局最大并发数
+CONCURRENT_REQUESTS_PER_DOMAIN = 8       # 单个域名最大并发数，如果下一个参数设置非0，此参数无效
+CONCURRENT_REQUESTS_PER_IP = 0           # 单个ip最大并发数
+
+COOKIES_ENABLED = True                   # 默认启用cookie，无需登录时一般将其关闭
+
+DEFAULT_REQUEST_HEADERS = {              # 设置默认请求头
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en',
+}
+
+DOWNLOAD_DELAY = 0                       # 下载延时，高并发采集时设为0
+DOWNLOAD_TIMEOUT = 180                   # 超时时间设置，一般设置在10-30之间
+
+LOG_ENABLED = True                       # 启用日志
+LOG_STDOUT = False                       # 将进程所有的标准输出(及错误)重定向到log中，默认False。如果开启，在项目中的print方法也会以log的形式输出
+LOG_LEVEL = 'DEBUG'                      # 日志输出级别，上线后至少使用info级别
+LOG_FILE = None                          # 将日志输出到文件中
+
+LOGSTATS_INTERVAL = 60.0                 # 吞吐量输出间隔，就是输出每分钟下载多少个页面、捕获多少个item的那个，默认每分钟输出一次，自主配置
+
+REDIRECT_ENABLED = True                  # 默认开启页面跳转，一般选择关闭
+
+RETRY_ENABLED = True                     # 默认开启失败重试，一般关闭
+RETRY_TIMES = 2                          # 失败后重试次数，默认两次
+RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408]    # 碰到这些验证码，才开启重试
+
+ROBOTSTXT_OBEY = False                   # 遵守网站robot协议，一般是不遵守的···········
+
+DOWNLOADER_MIDDLEWARES = {               # 下载中间件
+   'myproject.middlewares.MyDownloaderMiddleware': 543,
+}
+
+ITEM_PIPELINES = {                       # 数据处理、存储pipeline
+   'myproject.pipelines.MyPipeline': 300,
+}
+
+settings中设置的middleware和pipeline是全局通用的，所有的spider都会调用
+如果想多不同的spider进行不同得 pipeline 配置，可在spider中添加：custom_settings字典
+
+class MySpider(scrapy.Spider):
+    name = 'spider1'
+
+    custom_settings = {
+        'ITEM_PIPELINES': {'myproject.pipelines.pipeline1': 301},
+    }
+
+
+
+
+
