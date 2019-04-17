@@ -5,5 +5,21 @@
 [https://blog.csdn.net/rongDang/article/details/85938814](https://blog.csdn.net/rongDang/article/details/85938814)
 
 
-爬虫代理IP方面使用的是蘑菇代理，如果你使用也是蘑菇代理，那么修改下获取IP的连接即可
+爬虫代理IP方面使用的是蘑菇代理，如果你使用也是蘑菇代理，那么修改下获取IP接口的中间连接即可
+
+
+可用功能
+=============
+1.豆瓣电影，CSDN博客的爬取，数据存入MySQL&Elasticsearch
+2.对存入到Elasticsearch中的数据创建suggest
+3.在redis中存入具体站点的数量，搜索的热词
+
+
+
+
+
+
+
+
+
 
